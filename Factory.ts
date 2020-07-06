@@ -1,59 +1,93 @@
-enum TEACHER_TYPE {
-  CODING = 'coding',
-  MUSIC = 'music'
-}
-
-interface TeacherProperties {
-  name: string;
-}
-interface CodingTeacherProperties {
-  name: string;
-  programmingLanguage: string;
-}
-interface MusicTeacherProperties {
-  name: string;
-  instrument: string;
-}
-
-class Teacher {
-  public name: string;
-  constructor(properties: TeacherProperties) {
-    this.name = properties.name;
-  }
-}
-class CodingTeacher extends Teacher {
-  public programmingLanguage: string;
-  constructor(properties: CodingTeacherProperties) {
-    super(properties);
-    this.programmingLanguage = properties.programmingLanguage;
-  }
-}
-class MusicTeacher extends Teacher {
-  public instrument: string;
-  constructor(properties: MusicTeacherProperties) {
-    super(properties);
-    this.instrument = properties.instrument;
+abstract class Creator {
+  public abstract createDialog(): Product;
+  public render(title: string, message: string): string {
+    const product = this.createDialog();
+    product.update(title, message);
+    return product.render();
   }
 }
 
-class TeacherFactory {
-  public static getTeacher(type: TEACHER_TYPE.MUSIC, properties: MusicTeacherProperties): MusicTeacher;
-  public static getTeacher(type: TEACHER_TYPE.CODING, properties: CodingTeacherProperties): CodingTeacher;
-  public static getTeacher(type: TEACHER_TYPE, properties: MusicTeacherProperties & CodingTeacherProperties) {
-    switch (type) {
-      case TEACHER_TYPE.CODING:
-        return new CodingTeacher(properties);
-      case TEACHER_TYPE.MUSIC:
-        return new MusicTeacher(properties);
-      default:
-        throw new Error('Wrong teacher type chosen');
-    }
+class MacOSCreator extends Creator {
+  public createDialog(): Product {
+    return new MacOSDialog();
   }
 }
 
-const codingTeacher = TeacherFactory.getTeacher(TEACHER_TYPE.CODING, {
-  programmingLanguage: 'Javascript',
-  name: 'John'
-});
+class WindowsCreator extends Creator {
+  public createDialog(): Product {
+    return new WindowsDialog();
+  }
+}
 
-console.log(codingTeacher);
+class MacOSDialog implements Product {
+  message: string;
+  visible: boolean;
+  title: string;
+
+  constructor() {
+    this.visible = false;
+    this.title = '';
+    this.message = '';
+  }
+
+  hide(): void {
+    this.visible = false;
+  }
+  update(title: string, message: string): void {
+    this.title = title;
+    this.message = message;
+  }
+  render(): string {
+    return `
+      <div class="macos-dialog">
+        <h2>${this.title};</h2>
+        <p class="dialog-content">
+        ${this.message}
+        </p>
+      </div>
+    `;
+  }
+}
+class WindowsDialog implements Product {
+  message: string;
+  visible: boolean;
+  title: string;
+
+  constructor() {
+    this.visible = false;
+    this.title = '';
+    this.message = '';
+  }
+
+  hide(): void {
+    this.visible = false;
+  }
+  update(title: string, message: string): void {
+    this.title = title;
+    this.message = message;
+  }
+  render(): string {
+    return `
+      <div class="windows-dialog">
+        <h2>${this.title};</h2>
+        <p class="dialog-content">
+        ${this.message}
+        </p>
+      </div>
+    `;
+  }
+}
+
+interface Product {
+  title: string;
+  message: string;
+  visible: boolean;
+  hide(): void;
+  update(title: string, message: string): void;
+  render(): string;
+}
+
+const MacOSproduct = new MacOSCreator();
+const WindowsProduct = new WindowsCreator();
+console.log(MacOSproduct.render('Hello', 'MacOC'));
+console.log(WindowsProduct.render('Hello', 'Windows'));
